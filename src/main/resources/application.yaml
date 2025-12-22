@@ -2,13 +2,13 @@ spring:
   application:
     name: lovable-clone
   datasource:
-    url: jdbc:postgresql://localhost:5432/lovable-clone  # Your new DB
+    url: jdbc:postgresql://localhost:5432/lovable-clone
     username: postgres
     password: Vinay@2025
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create  # Or 'update' to preserve tables
+      ddl-auto: create
     show-sql: true
-  jwt:
-    secrete-key : hkajhdkahdkhkshhskajdhkahdahshsakhhhhhhhhdsddhahkshj
+
+jwt-secret-key: hkajhdkahdkhkshhskajdhkahdahshsakhhhhhhhhdsddhahkshj
