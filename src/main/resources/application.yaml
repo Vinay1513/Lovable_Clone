@@ -1,15 +1,25 @@
 spring:
   application:
     name: lovable-clone
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/lovable-clone
-    username: postgres
-    password: Vinay@2025
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/lovable-clone}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:Vinay@2025}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
 
 jwt:
-  secret-key: hkajhdkahdkhkshhskajdhkahdahshsakhhhhhhhhdsddhahkshj
+  secret-key: ${JWT_SECRET_KEY:hkajhdkahdkhkshhskajdhkahdahshsakhhhhhhhhdsddhahkshj}
+
+stripe:
+  secret: ${STRIPE_SECRET_KEY}
+  webhook:
+    secret: ${STRIPE_WEBHOOK_SECRET}
+
+client:
+  url: ${CLIENT_URL:http://localhost:8080}
