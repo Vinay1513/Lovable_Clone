@@ -14,5 +14,7 @@ public class PaymentConfig {
     @PostConstruct
     public void init() {
         Stripe.apiKey = stripeSecretKey;
+        System.out.println("STRIPE KEY IN USE = " + stripeSecretKey);
+
     }
 }
