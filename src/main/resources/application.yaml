@@ -13,6 +13,18 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  ai:
+    openai:
+      api-key:
+        base-url:
+          chat:
+            options:
+              modal: qwen/qwen3-coder:free
+              temperature: 0.0
+
+
+
+
 jwt:
   secret-key: ${JWT_SECRET_KEY:hkajhdkahdkhkshhskajdhkahdahshsakhhhhhhhhdsddhahkshj}
 
