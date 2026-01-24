@@ -1,4 +1,3 @@
 package com.project1.lovable_clone.dto.chat;
 
-public class ChatRequest {
-}
+public record ChatRequest(String message, Long projectId) {}

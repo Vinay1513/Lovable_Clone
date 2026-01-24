@@ -1,4 +1,18 @@
 package com.project1.lovable_clone.entity;
 
-public class ChatSessionId {
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.io.Serializable;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString
+public class ChatSessionId implements Serializable {
+
+    Long ProjectId;
+    Long UserId;
 }

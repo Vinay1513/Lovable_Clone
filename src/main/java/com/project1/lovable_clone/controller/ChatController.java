@@ -1,5 +1,6 @@
 package com.project1.lovable_clone.controller;
 
+import com.project1.lovable_clone.dto.chat.ChatRequest;
 import com.project1.lovable_clone.service.AiGenerationService;
 import com.project1.lovable_clone.service.UserService;
 import lombok.RequiredArgsConstructor;
