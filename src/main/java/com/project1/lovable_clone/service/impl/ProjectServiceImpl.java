@@ -8,6 +8,7 @@ import com.project1.lovable_clone.entity.ProjectMember;
 import com.project1.lovable_clone.entity.ProjectMemberId;
 import com.project1.lovable_clone.entity.User;
 import com.project1.lovable_clone.enums.ProjectRole;
+import com.project1.lovable_clone.error.BadRequestException;
 import com.project1.lovable_clone.error.ResourceNotFoundException;
 import com.project1.lovable_clone.mapper.ProjectMapper;
 import com.project1.lovable_clone.repository.ProjectMemberRepository;
@@ -15,6 +16,8 @@ import com.project1.lovable_clone.repository.ProjectRepository;
 import com.project1.lovable_clone.repository.UserRepository;
 import com.project1.lovable_clone.security.AuthUtil;
 import com.project1.lovable_clone.service.ProjectService;
+import com.project1.lovable_clone.service.ProjectTemplateService;
+import com.project1.lovable_clone.service.SubscriptionService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +40,16 @@ public class ProjectServiceImpl implements ProjectService {
     ProjectMapper projectMapper;
     ProjectMemberRepository projectMemberRepository;
     AuthUtil authUtil;
+    SubscriptionService subscriptionService;
+    ProjectTemplateService projectTemplateService;
 
     @Override
     public ProjectResponse createProject(ProjectRequest request) {
+
+        if(!subscriptionService.canCreateNewProject()) {
+            throw new BadRequestException("User cannot create a New project with current Plan, Upgrade plan now.");
+        }
+
         Long userId = authUtil.getCurrentUserId();
 //        User owner = userRepository.findById(userId).orElseThrow(
 //                () -> new ResourceNotFoundException("User", userId.toString())
@@ -52,7 +62,6 @@ public class ProjectServiceImpl implements ProjectService {
                 .build();
         project = projectRepository.save(project);
 
-
         ProjectMemberId projectMemberId = new ProjectMemberId(project.getId(), owner.getId());
         ProjectMember projectMember = ProjectMember.builder()
                 .id(projectMemberId)
@@ -63,6 +72,8 @@ public class ProjectServiceImpl implements ProjectService {
                 .project(project)
                 .build();
         projectMemberRepository.save(projectMember);
+
+        projectTemplateService.initializeProjectFromTemplate(project.getId());
 
         return projectMapper.toProjectResponse(project);
     }

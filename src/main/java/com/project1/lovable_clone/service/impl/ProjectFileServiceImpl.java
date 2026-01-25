@@ -1,16 +1,27 @@
 package com.project1.lovable_clone.service.impl;
 
+import com.project1.lovable_clone.dto.project.FileContentResponse;
 import com.project1.lovable_clone.dto.project.FileNode;
+import com.project1.lovable_clone.entity.Project;
 import com.project1.lovable_clone.entity.ProjectFile;
+import com.project1.lovable_clone.error.ResourceNotFoundException;
 import com.project1.lovable_clone.mapper.ProjectFileMapper;
 import com.project1.lovable_clone.repository.ProjectFileRepository;
 import com.project1.lovable_clone.repository.ProjectRepository;
 import com.project1.lovable_clone.service.ProjectFileService;
+import io.minio.GetObjectArgs;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -26,15 +37,31 @@ public class ProjectFileServiceImpl implements ProjectFileService {
     @Value("${minio.project-bucket}")
     private String projectBucket;
 
+    private static final String BUCKET_NAME = "projects";
+
+
     @Override
-    public List<FileNode> getFileTree(Long projectId, Long userId) {
+    public List<FileNode> getFileTree(Long projectId) {
         List<ProjectFile> projectFileList = projectFileRepository.findByProjectId(projectId);
         return projectFileMapper.toListOfFileNode(projectFileList);
     }
 
     @Override
-    public FileContentResponse getFileContent(Long projectId, String path, Long userId) {
-        return null;
+    public FileContentResponse getFileContent(Long projectId, String path) {
+        String objectName = projectId + "/" + path;
+        try (
+                InputStream is = minioClient.getObject(
+                        GetObjectArgs.builder()
+                                .bucket(BUCKET_NAME)
+                                .object(objectName)
+                                .build())) {
+
+            String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            return new FileContentResponse(path, content);
+        } catch (Exception e) {
+            log.error("Failed to read file: {}/{}", projectId, path, e);
+            throw new RuntimeException("Failed to read file content", e);
+        }
     }
 
     @Override
@@ -87,4 +114,3 @@ public class ProjectFileServiceImpl implements ProjectFileService {
         return "text/plain";
     }
 }
-

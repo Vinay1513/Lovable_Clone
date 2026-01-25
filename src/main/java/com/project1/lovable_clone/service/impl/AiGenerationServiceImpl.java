@@ -1,6 +1,8 @@
 package com.project1.lovable_clone.service.impl;
 
 import com.project1.lovable_clone.llm.PromptUtils;
+import com.project1.lovable_clone.llm.advisors.FileTreeContextAdvisor;
+import com.project1.lovable_clone.llm.tools.CodeGenerationTools;
 import com.project1.lovable_clone.security.AuthUtil;
 import com.project1.lovable_clone.service.AiGenerationService;
 import com.project1.lovable_clone.service.ProjectFileService;
@@ -14,6 +16,15 @@ import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.HashMap;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
+import tools.jackson.databind.deser.BasicDeserializerFactory;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -27,6 +38,7 @@ public class AiGenerationServiceImpl implements AiGenerationService {
     private final ChatClient chatClient;
     private final AuthUtil authUtil;
     private final ProjectFileService projectFileService;
+    private final FileTreeContextAdvisor fileTreeContextAdvisor;
 
     private static final Pattern FILE_TAG_PATTERN = Pattern.compile("<file path=\"([^\"]+)\">(.*?)</file>", Pattern.DOTALL);
 
@@ -43,11 +55,15 @@ public class AiGenerationServiceImpl implements AiGenerationService {
 
         StringBuilder fullResponseBuffer = new StringBuilder();
 
+        CodeGenerationTools codeGenerationTools = new CodeGenerationTools(projectFileService, projectId);
+
         return chatClient.prompt()
                 .system(PromptUtils.CODE_GENERATION_SYSTEM_PROMPT)
                 .user(userMessage)
+                .tools(codeGenerationTools)
                 .advisors(advisorSpec -> {
                             advisorSpec.params(advisorParams);
+                            advisorSpec.advisors(fileTreeContextAdvisor);
                         }
                 )
                 .stream()
